@@ -3,7 +3,9 @@ from collections.abc import Callable
 Spell = Callable[[str, int], str]
 
 
-def spell_combiner(spell1: Spell, spell2: Spell) -> Callable[[str, int], tuple[str, str]]:
+def spell_combiner(
+    spell1: Spell, spell2: Spell
+) -> Callable[[str, int], tuple[str, str]]:
     def combined(target: str, power: int) -> tuple[str, str]:
         return (spell1(target, power), spell2(target, power))
     return combined
@@ -15,7 +17,9 @@ def power_amplifier(base_spell: Spell, multiplier: int) -> Spell:
     return amplified
 
 
-def conditional_caster(condition: Callable[[str, int], bool], spell: Spell) -> Spell:
+def conditional_caster(
+    condition: Callable[[str, int], bool], spell: Spell
+) -> Spell:
     def caster(target: str, power: int) -> str:
         if condition(target, power):
             return spell(target, power)

@@ -20,11 +20,21 @@ def spell_timer(func: Callable[P, R]) -> Callable[P, R]:
     return wrapper
 
 
-def power_validator(min_power: int) -> Callable[[Callable[P, R]], Callable[P, R | str]]:
+def power_validator(
+    min_power: int
+) -> Callable[[Callable[P, R]], Callable[P, R | str]]:
     def decorator(func: Callable[P, R]) -> Callable[P, R | str]:
+        positional_names = func.__code__.co_varnames[
+            :func.__code__.co_argcount
+        ]
+        power_position = positional_names.index("power")
+
         @functools.wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R | str:
-            power: Any = kwargs.get("power", args[-1] if args else 0)
+            power: Any = kwargs.get(
+                "power",
+                args[power_position] if len(args) > power_position else 0,
+            )
             if power >= min_power:
                 return func(*args, **kwargs)
             return "Insufficient power for this spell"
@@ -34,7 +44,9 @@ def power_validator(min_power: int) -> Callable[[Callable[P, R]], Callable[P, R 
     return decorator
 
 
-def retry_spell(max_attempts: int) -> Callable[[Callable[P, R]], Callable[P, R | str]]:
+def retry_spell(
+    max_attempts: int
+) -> Callable[[Callable[P, R]], Callable[P, R | str]]:
     def decorator(func: Callable[P, R]) -> Callable[P, R | str]:
         @functools.wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R | str:
