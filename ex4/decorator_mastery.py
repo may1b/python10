@@ -1,12 +1,15 @@
 import functools
 import time
 from collections.abc import Callable
-from typing import Any
+from typing import Any, ParamSpec, TypeVar
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
-def spell_timer(func: Callable) -> Callable:
+def spell_timer(func: Callable[P, R]) -> Callable[P, R]:
     @functools.wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         print(f"Casting {func.__name__}...")
         start = time.time()
         result = func(*args, **kwargs)
@@ -17,11 +20,11 @@ def spell_timer(func: Callable) -> Callable:
     return wrapper
 
 
-def power_validator(min_power: int) -> Callable:
-    def decorator(func: Callable) -> Callable:
+def power_validator(min_power: int) -> Callable[[Callable[P, R]], Callable[P, R | str]]:
+    def decorator(func: Callable[P, R]) -> Callable[P, R | str]:
         @functools.wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            power = kwargs.get("power", args[-1] if args else 0)
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R | str:
+            power: Any = kwargs.get("power", args[-1] if args else 0)
             if power >= min_power:
                 return func(*args, **kwargs)
             return "Insufficient power for this spell"
@@ -31,10 +34,10 @@ def power_validator(min_power: int) -> Callable:
     return decorator
 
 
-def retry_spell(max_attempts: int) -> Callable:
-    def decorator(func: Callable) -> Callable:
+def retry_spell(max_attempts: int) -> Callable[[Callable[P, R]], Callable[P, R | str]]:
+    def decorator(func: Callable[P, R]) -> Callable[P, R | str]:
         @functools.wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R | str:
             for attempt in range(1, max_attempts + 1):
                 try:
                     return func(*args, **kwargs)
