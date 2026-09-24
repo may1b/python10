@@ -18,8 +18,8 @@ def spell_transformer(spells: list[str]) -> list[str]:
 def mage_stats(mages: list[dict[str, Any]]) -> dict[str, Any]:
     powers = list(map(lambda mage: mage['power'], mages))
     return {
-        'max_power': max(powers),
-        'min_power': min(powers),
+        'max_power': max(mages, key=lambda mage: mage['power'])['power'],
+        'min_power': min(mages, key=lambda mage: mage['power'])['power'],
         'avg_power': round(sum(powers) / len(powers), 2),
     }
 

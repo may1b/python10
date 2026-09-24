@@ -27,14 +27,19 @@ def power_validator(
         positional_names = func.__code__.co_varnames[
             :func.__code__.co_argcount
         ]
-        power_position = positional_names.index("power")
+        power_name = (
+            "power" if "power" in positional_names else positional_names[0]
+        )
+        power_position = positional_names.index(power_name)
 
         @functools.wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R | str:
-            power: Any = kwargs.get(
-                "power",
-                args[power_position] if len(args) > power_position else 0,
-            )
+            if power_name in kwargs:
+                power: Any = kwargs[power_name]
+            elif len(args) > power_position:
+                power = args[power_position]
+            else:
+                return func(*args, **kwargs)
             if power >= min_power:
                 return func(*args, **kwargs)
             return "Insufficient power for this spell"
